@@ -1,30 +1,26 @@
 import React from "react";
 
 import {
-  FinishedTasksTableCellStyled,
-  FinishedTasksTableRowStyled,
   FinishedTasksTableStyled,
   FinishedTasksTableHeaderStyled,
   FinishedTasksTableHeaderCellStyled,
 } from "./FinishedTasks.styled";
-import { Task } from "../TasksList/TasksList";
+import { ITask } from "../TasksList/Task.types";
+import { Task } from "../Task/Task";
 
-export const FinishedTasks: React.FC = () => {
-  const finishedTasksList = [
-    {
-      title: "Wash dishes",
-      description: "Do it great",
-      date: "20 Nov",
-      attachedFile: "file",
-    },
-    {
-      title: "Pet a cat",
-      description: "Cat should be satisfied",
-      date: "21 Nov",
-      attachedFile: "file",
-    },
-  ];
+interface FinishedTasksProps {
+  tasks: ITask[];
+  onDeleteTaskClick: (id: string) => void;
+  onTaskComplete: (id: string, status: boolean) => void;
+  onEditTaskClick: (
+    id: string,
+    title: string,
+    description: string,
+    date: string
+  ) => void;
+}
 
+export const FinishedTasks: React.FC<FinishedTasksProps> = (props) => {
   return (
     <FinishedTasksTableStyled>
       <FinishedTasksTableHeaderStyled>
@@ -44,25 +40,18 @@ export const FinishedTasks: React.FC = () => {
           Attached file
         </FinishedTasksTableHeaderCellStyled>
       </FinishedTasksTableHeaderStyled>
-      {finishedTasksList.map((task: Task) => (
-        <FinishedTasksTableRowStyled>
-          <FinishedTasksTableCellStyled>
-            <input type="checkbox" checked />
-          </FinishedTasksTableCellStyled>
-          <FinishedTasksTableCellStyled>
-            {task.title}
-          </FinishedTasksTableCellStyled>
-          <FinishedTasksTableCellStyled>
-            {task.description}
-          </FinishedTasksTableCellStyled>
-          <FinishedTasksTableCellStyled>
-            {task.date}
-          </FinishedTasksTableCellStyled>
-          <FinishedTasksTableCellStyled>
-            {task.attachedFile}
-          </FinishedTasksTableCellStyled>
-        </FinishedTasksTableRowStyled>
-      ))}
+
+      {props.tasks
+        .filter((task) => task.active === false)
+        .map((task: ITask) => (
+          <Task
+            task={task}
+            onDeleteTaskClick={props.onDeleteTaskClick}
+            key={task.id}
+            onTaskComplete={props.onTaskComplete}
+            onEditTask={props.onEditTaskClick}
+          />
+        ))}
     </FinishedTasksTableStyled>
   );
 };

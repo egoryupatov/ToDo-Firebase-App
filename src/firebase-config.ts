@@ -1,19 +1,21 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD0S0-OFofRJR0mZMctWrMgMbpk18x6mlI",
+  apiKey: "",
 
-  authDomain: "to-do-list-7a9e5.firebaseapp.com",
+  authDomain: "to-do-app-3350a.firebaseapp.com",
 
-  projectId: "to-do-list-7a9e5",
+  projectId: "to-do-app-3350a",
 
-  storageBucket: "to-do-list-7a9e5.appspot.com",
+  storageBucket: "to-do-app-3350a.appspot.com",
 
-  messagingSenderId: "578977216403",
+  messagingSenderId: "965712108641",
 
-  appId: "1:578977216403:web:9bbaa0d2df66a6eff71a66",
+  appId: "1:965712108641:web:d6a20c1c443a0e2d4b5e20",
 };
 
 const app = initializeApp(firebaseConfig);
+export const storage = getStorage(app);
 export const db = getFirestore(app);

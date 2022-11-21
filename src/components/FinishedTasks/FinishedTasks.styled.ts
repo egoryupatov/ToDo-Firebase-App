@@ -78,7 +78,7 @@ export const FinishedTasksTableCellStyled = styled(TasksTableCellStyled)`
   }
 
   &:nth-child(4) {
-    max-width: 100px;
+    max-width: 130px;
     margin-right: 5px;
   }
 

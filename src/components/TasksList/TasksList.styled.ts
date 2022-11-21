@@ -61,18 +61,31 @@ export const TasksTableCellStyled = styled.div`
   }
 
   &:nth-child(4) {
-    max-width: 100px;
+    max-width: 130px;
     margin-right: 5px;
+    justify-content: center;
+  }
+
+  &:nth-child(5) {
+    max-width: 130px;
+    margin-right: 5px;
+    justify-content: center;
+  }
+
+  &:nth-child(6) {
+    max-width: 30px;
+    margin-right: 5px;
+    justify-content: center;
   }
 
   &:last-child {
-    max-width: 125px;
+    max-width: 30px;
     margin-right: 5px;
     justify-content: center;
   }
 `;
 
-export const AddTaskButtonStyled = styled.button`
+export const TaskButtonStyled = styled.button`
   width: 100px;
   background-color: #fafbfc;
   border: 1px solid rgba(27, 31, 35, 0.15);
@@ -101,6 +114,23 @@ export const AddTaskButtonStyled = styled.button`
     background-color: #f3f4f6;
     text-decoration: none;
     transition-duration: 0.1s;
+  }
+`;
+
+export const AddTaskDateInputStyled = styled.input`
+  text-align: center;
+  background-color: #fafbfc;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0,
+    rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  box-sizing: border-box;
+
+  ::-webkit-calendar-picker-indicator {
+    background-color: #ffffff;
+    margin-right: 5px;
+    cursor: pointer;
+    border-radius: 3px;
   }
 `;
 

@@ -1,49 +1,88 @@
 import React, { useEffect, useState } from "react";
 import {
-  TasksListStyled,
+  TaskButtonStyled,
   TasksListHeaderStyled,
-  TaskStyled,
+  TasksListStyled,
   TasksTableCellStyled,
   TasksTableRowStyled,
   TasksTableStyled,
-  AddTaskButtonStyled,
 } from "./TasksList.styled";
 import { FinishedTasks } from "../FinishedTasks/FinishedTasks";
 import { AddTaskField } from "../AddTaskField/AddTaskField";
 import { db } from "../../firebase-config";
-import { collection, getDocs } from "firebase/firestore";
-
-export interface Task {
-  title: string;
-  description: string;
-  date: string;
-  attachedFile: string;
-}
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
+import { Task } from "../Task/Task";
+import { ITask } from "./Task.types";
 
 export const TasksList: React.FC = () => {
-  const todosCollectionRef = collection(db, "todos");
-  const [todos, setTodos] = useState<Task[]>([]);
+  const tasksCollectionRef = collection(db, "todos");
+  const [tasks, setTasks] = useState<any>([]);
+
+  const getTasks = async () => {
+    const data = await getDocs(tasksCollectionRef);
+    setTasks(data.docs.map((doc: any) => ({ ...doc.data(), id: doc.id })));
+  };
 
   useEffect(() => {
-    const getTodos = async () => {
-      const data = await getDocs(todosCollectionRef);
-      setTodos(data.docs.map((doc: any) => doc.data()));
-    };
+    getTasks();
+  }, []);
 
-    getTodos();
-  }, [todos]);
+  const handleAddNewTask = (newTask: ITask) => {
+    getTasks();
+  };
 
   const [areFinishedTasksDisplayed, setAreFinishedTasksDisplayed] =
     useState<boolean>(false);
-  const [isAddPostWindowOpened, setIsAddPostWindowOpened] =
+  const [isAddTaskWindowOpened, setIsAddTaskWindowOpened] =
     useState<boolean>(false);
+
+  const onAddTaskClick = () => {
+    setIsAddTaskWindowOpened(!isAddTaskWindowOpened);
+  };
 
   const onFinishedTasksClick = () => {
     setAreFinishedTasksDisplayed(!areFinishedTasksDisplayed);
   };
 
-  const onAddPostClick = () => {
-    setIsAddPostWindowOpened(!isAddPostWindowOpened);
+  const onTaskComplete = async (id: string, active: boolean) => {
+    const task = doc(db, "todos", id);
+    const editedField = { active: false };
+    await updateDoc(task, editedField);
+    setTasks((prevState: ITask[]) =>
+      prevState.map((task) =>
+        task.id === id ? { ...task, active: false } : task
+      )
+    );
+  };
+
+  const onEditTaskClick = async (
+    id: string,
+    title: string,
+    description: string,
+    date: string
+  ) => {
+    const editedTask = doc(db, "todos", id);
+    const editedFields = { title: title, description: description, date: date };
+    await updateDoc(editedTask, editedFields);
+    setTasks((prevState: ITask[]) =>
+      prevState.map((task) =>
+        task.id === id
+          ? { ...task, title: title, description: description, date: date }
+          : task
+      )
+    );
+  };
+
+  const onDeleteTaskClick = async (id: string) => {
+    const task = doc(db, "todos", id);
+    await deleteDoc(task);
+    setTasks((prevstate: ITask[]) => prevstate.filter((e) => e.id != id));
   };
 
   return (
@@ -59,28 +98,34 @@ export const TasksList: React.FC = () => {
           <TasksTableCellStyled>Description</TasksTableCellStyled>
           <TasksTableCellStyled>Due date</TasksTableCellStyled>
           <TasksTableCellStyled>Attached file</TasksTableCellStyled>
+          <TasksTableCellStyled></TasksTableCellStyled>
+          <TasksTableCellStyled></TasksTableCellStyled>
         </TasksTableRowStyled>
-        {todos.map((task: Task) => (
-          <TasksTableRowStyled>
-            <TasksTableCellStyled>
-              <input type="checkbox" />
-            </TasksTableCellStyled>
-            <TasksTableCellStyled>{task.title}</TasksTableCellStyled>
-            <TasksTableCellStyled>{task.description}</TasksTableCellStyled>
-            <TasksTableCellStyled>{task.date}</TasksTableCellStyled>
-            <TasksTableCellStyled>{task.attachedFile}</TasksTableCellStyled>
-          </TasksTableRowStyled>
-        ))}
+
+        {tasks
+          .filter((task: ITask) => task.active === true)
+          .map((task: ITask) => (
+            <Task
+              task={task}
+              onDeleteTaskClick={onDeleteTaskClick}
+              key={task.id}
+              onTaskComplete={onTaskComplete}
+              onEditTask={onEditTaskClick}
+            />
+          ))}
       </TasksTableStyled>
 
-      {isAddPostWindowOpened ? (
-        <AddTaskField onAddPostClick={onAddPostClick} />
+      {isAddTaskWindowOpened ? (
+        <AddTaskField
+          onAddTaskClick={onAddTaskClick}
+          onAddNewTask={handleAddNewTask}
+        />
       ) : (
-        <AddTaskButtonStyled onClick={onAddPostClick}>
+        <TaskButtonStyled onClick={onAddTaskClick}>
           <div style={{ fontFamily: "inherit", textAlign: "center" }}>
             Add task
           </div>
-        </AddTaskButtonStyled>
+        </TaskButtonStyled>
       )}
 
       <TasksListHeaderStyled
@@ -91,7 +136,16 @@ export const TasksList: React.FC = () => {
         <span className="material-symbols-outlined">arrow_drop_down</span>
       </TasksListHeaderStyled>
 
-      {areFinishedTasksDisplayed ? <FinishedTasks /> : ""}
+      {areFinishedTasksDisplayed ? (
+        <FinishedTasks
+          tasks={tasks}
+          onDeleteTaskClick={onDeleteTaskClick}
+          onTaskComplete={onTaskComplete}
+          onEditTaskClick={onEditTaskClick}
+        />
+      ) : (
+        ""
+      )}
     </TasksListStyled>
   );
 };

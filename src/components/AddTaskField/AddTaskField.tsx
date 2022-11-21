@@ -1,33 +1,59 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AddTaskFieldStyled, AddTaskTextStyled } from "./AddTaskField.styled";
 import {
-  AddTaskButtonStyled,
+  TaskButtonStyled,
+  AddTaskDateInputStyled,
   AddTaskInputStyled,
 } from "../TasksList/TasksList.styled";
-import { Task } from "../TasksList/TasksList";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../../firebase-config";
+import { ITask } from "../TasksList/Task.types";
+import { storage } from "../../firebase-config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface AddTaskFieldInterface {
-  onAddPostClick: () => void;
+  onAddTaskClick: () => void;
+  onAddNewTask: (task: ITask) => void;
 }
 
 export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
-  const [newTask, setNewTask] = useState<Task>({
+  // @ts-ignore
+  const [newTask, setNewTask] = useState<ITask>({
     title: "",
     description: "",
-    date: "Today",
-    attachedFile: "File.jpg",
+    date: null,
+    attachedFile: "",
+    id: "",
+    active: true,
   });
 
-  const todosCollectionRef = collection(db, "todos");
+  const [taskAttachedFile, setTaskAttachedFile] = useState<File>();
 
-  const onAddPostClick = async () => {
-    await addDoc(todosCollectionRef, newTask);
+  const tasksCollectionRef = collection(db, "todos");
+
+  const onAddTaskClick = async () => {
+    const attachedFileRef = ref(
+      storage,
+      `files/${
+        taskAttachedFile?.name + String(Math.floor(Math.random() * 1000))
+      }`
+    );
+    // @ts-ignore
+
+    const snapshot = await uploadBytes(attachedFileRef, taskAttachedFile);
+    const attachedFileUrl = await getDownloadURL(snapshot.ref);
+
+    const doc = await addDoc(tasksCollectionRef, {
+      ...newTask,
+      attachedFile: attachedFileUrl,
+    });
+    const newTaskWithId = { ...newTask, id: doc.id };
+    props.onAddNewTask(newTaskWithId);
+    props.onAddTaskClick();
   };
 
   const onCancelClick = () => {
-    props.onAddPostClick();
+    props.onAddTaskClick();
   };
 
   const onTitleChange = (e: any) => {
@@ -38,13 +64,21 @@ export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
     setNewTask({ ...newTask, description: e.target.value });
   };
 
+  const onFileAttach = (e: any) => {
+    setTaskAttachedFile(e.target.files[0]);
+  };
+
+  const onSetDate = (e: any) => {
+    setNewTask({ ...newTask, date: e.target.value });
+  };
+
   return (
     <AddTaskFieldStyled>
-      <form>
+      <form method="dialog">
         <AddTaskTextStyled>
           <textarea
             onChange={onTitleChange}
-            maxLength={25}
+            maxLength={35}
             style={{ minHeight: "20px" }}
             placeholder="Task name"
           />
@@ -56,9 +90,8 @@ export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
           />
         </AddTaskTextStyled>
         <div style={{ display: "flex", gap: "10px" }}>
-          {/*<AddTaskButtonStyled onClick={onAddPostClick}>
-            Add post
-          </AddTaskButtonStyled>*/}
+          <TaskButtonStyled onClick={onAddTaskClick}>Add task</TaskButtonStyled>
+
           <AddTaskInputStyled>
             <span
               style={{
@@ -69,17 +102,18 @@ export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
             >
               Attach a file
             </span>
-            <input type="file" />
+            <input onChange={onFileAttach} type="file" />
           </AddTaskInputStyled>
-          <AddTaskButtonStyled>Set date</AddTaskButtonStyled>
-          <AddTaskButtonStyled onClick={onCancelClick}>
-            Cancel
-          </AddTaskButtonStyled>
+
+          <AddTaskDateInputStyled
+            type="date"
+            min={new Date().getDate()}
+            onChange={onSetDate}
+          ></AddTaskDateInputStyled>
+
+          <TaskButtonStyled onClick={onCancelClick}>Cancel</TaskButtonStyled>
         </div>
       </form>
-      <AddTaskButtonStyled onClick={onAddPostClick}>
-        Add post
-      </AddTaskButtonStyled>
     </AddTaskFieldStyled>
   );
 };
