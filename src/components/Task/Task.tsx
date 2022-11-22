@@ -110,7 +110,7 @@ export const Task: React.FC<{
       {isEditTaskWindowOpened ? (
         <EditTaskField
           onEditTaskClick={onEditTaskClick}
-          onTaskEdited={onEditTask}
+          onEditTask={onEditTask}
           task={task}
         />
       ) : (

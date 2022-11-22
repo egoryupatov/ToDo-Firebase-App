@@ -9,7 +9,7 @@ import { ITask } from "../TasksList/Task.types";
 
 interface EditTaskFieldProps {
   onEditTaskClick: () => void;
-  onTaskEdited: (
+  onEditTask: (
     id: string,
     title: string,
     description: string,
@@ -58,7 +58,7 @@ export const EditTaskField: React.FC<EditTaskFieldProps> = (props) => {
         <div style={{ display: "flex", gap: "10px" }}>
           <TaskButtonStyled
             onClick={() => {
-              props.onTaskEdited(
+              props.onEditTask(
                 editedTask.id,
                 editedTask.title,
                 editedTask.description,
@@ -77,21 +77,9 @@ export const EditTaskField: React.FC<EditTaskFieldProps> = (props) => {
               Update task
             </span>
           </TaskButtonStyled>
-          <AddTaskInputStyled>
-            <span
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                fontWeight: "normal",
-              }}
-            >
-              New file
-            </span>
-            <input type="file" />
-          </AddTaskInputStyled>
+
           <AddTaskDateInputStyled
             type="date"
-            min={new Date().getDate()}
             onChange={onDateEdit}
           ></AddTaskDateInputStyled>
           <TaskButtonStyled onClick={props.onEditTaskClick}>

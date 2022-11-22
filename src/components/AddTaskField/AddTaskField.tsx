@@ -28,10 +28,17 @@ export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
   });
 
   const [taskAttachedFile, setTaskAttachedFile] = useState<File>();
+  const [isEmptyFieldsErrorDisplayed, setIsEmptyFieldsErrorDisplayed] =
+    useState(false);
 
   const tasksCollectionRef = collection(db, "todos");
 
   const onAddTaskClick = async () => {
+    if (!newTask.title || !newTask.description || newTask.date === null) {
+      setIsEmptyFieldsErrorDisplayed(!isEmptyFieldsErrorDisplayed);
+      return;
+    }
+
     const attachedFileRef = ref(
       storage,
       `files/${
@@ -50,6 +57,7 @@ export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
     const newTaskWithId = { ...newTask, id: doc.id };
     props.onAddNewTask(newTaskWithId);
     props.onAddTaskClick();
+    setIsEmptyFieldsErrorDisplayed(!isEmptyFieldsErrorDisplayed);
   };
 
   const onCancelClick = () => {
@@ -107,13 +115,18 @@ export const AddTaskField: React.FC<AddTaskFieldInterface> = (props) => {
 
           <AddTaskDateInputStyled
             type="date"
-            min={new Date().getDate()}
             onChange={onSetDate}
           ></AddTaskDateInputStyled>
 
           <TaskButtonStyled onClick={onCancelClick}>Cancel</TaskButtonStyled>
         </div>
       </form>
+
+      {isEmptyFieldsErrorDisplayed ? (
+        <span style={{ fontWeight: "bold" }}>
+          You should fill all the fields!
+        </span>
+      ) : null}
     </AddTaskFieldStyled>
   );
 };
